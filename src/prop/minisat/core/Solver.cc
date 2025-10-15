@@ -1520,8 +1520,57 @@ lbool Solver::search(int nof_conflicts)
       }
 
       // Analyze the conflict
+
+      std::cout << "====" << std::endl;
+      std::cout << "nvar: " << nVars() << std::endl << "nclauses: " << nClauses() << std::endl;
+      std::cout << "----" << std::endl;
+      int i1 = 0, i2 = 0;
+      while (i1 < clauses_persistent.size() && i2 < clauses_removable.size()) {
+        CRef c1 = clauses_persistent[i1];
+        CRef c2 = clauses_removable[i2];
+        if (c1 < c2) {
+          std::cout << c1 << ": " << ca[c1] << std::endl;
+          i1++;
+        } else {
+          std::cout << c2 << ": " << ca[c2] << std::endl;
+          i2++;
+        }
+      }
+      while (i1 < clauses_persistent.size()) {
+        CRef c = clauses_persistent[i1];
+        std::cout << c << ": " << ca[c] << std::endl;
+        i1++;
+      }
+      while (i2 < clauses_removable.size()) {
+        CRef c = clauses_removable[i2];
+        std::cout << c << ": " << ca[c] << std::endl;
+        i2++;
+      }
+      std::cout << "----" << std::endl;
+      for (int i = 0; i < trail.size(); i++) {
+        const Lit l = trail[i];
+        const Var v = var(l);
+        std::cout << l << " ";
+        if (isPropagated(v)) {
+          std::cout << "(" << reason(v) << ")";
+        } else if (isDecision(v)) {
+          std::cout << "@" << level(v);
+        }
+        std::cout << std::endl;
+      }
+
+      std::cout << "----" << std::endl;
+      std::cout << "Conflict: " << confl << std::endl;
       learnt_clause.clear();
       int max_level = analyze(confl, learnt_clause, backtrack_level);
+      std::cout << "Learnt clause: ";
+      for (int i = 0, size = learnt_clause.size(); i < size; ++i)
+      {
+        std::cout << learnt_clause[i] << " ";
+      }
+      std::cout << std::endl;
+      std::cout << "BT: " << backtrack_level << std::endl;
+      std::cout << "++++" << std::endl;
       cancelUntil(backtrack_level);
 
       // Assert the conflict clause and the asserting literal
@@ -1730,6 +1779,7 @@ static double luby(double y, int x){
 lbool Solver::solve_()
 {
     Trace("minisat") << "nvars = " << nVars() << std::endl;
+    std::cout << "solve(" << nVars() << ")" << std::endl;
 
     ScopedBool scoped_bool(minisat_busy, true);
 

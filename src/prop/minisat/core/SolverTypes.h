@@ -154,11 +154,9 @@ inline std::ostream& operator <<(std::ostream& out, Minisat::Lit lit) {
 }
 
 inline std::ostream& operator <<(std::ostream& out, Minisat::vec<Minisat::Lit>& clause) {
-  out << "clause:";
   for(int i = 0; i < clause.size(); ++i) {
     out << " " << clause[i];
   }
-  out << ";";
   return out;
 }
 
@@ -488,6 +486,13 @@ inline void Clause::strengthen(Lit p)
 {
     remove(*this, p);
     calcAbstraction();
+}
+
+inline std::ostream& operator <<(std::ostream& out, const Minisat::Clause& clause) {
+    for(int i = 0; i < clause.size(); ++i) {
+        out << " " << clause[i];
+    }
+    return out;
 }
 
 //=================================================================================================
