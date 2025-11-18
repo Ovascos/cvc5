@@ -347,14 +347,27 @@ bool BVSolverBitblast::collectModelValues(TheoryModel* m,
 void BVSolverBitblast::initSatSolver()
 {
   using prop::SatSolverFactory;
+  using options::BvSatSolverMode;
+
+  auto factory = [](const BvSatSolverMode mode)
+  {
+    switch (mode)
+    {
+      default:
+        Unreachable();
+      case BvSatSolverMode::CADICAL:
+        return SatSolverFactory::createSatSolver<SatSolverFactory::CADICAL>;
+      case BvSatSolverMode::CRYPTOMINISAT:
+        return SatSolverFactory::createSatSolver<SatSolverFactory::CRYPTOMINISAT>;
+      case BvSatSolverMode::KISSAT:
+        return SatSolverFactory::createSatSolver<SatSolverFactory::KISSAT>;
+    }
+  };
   d_satSolver.reset(
-      (options().bv.bvSatSolver == options::BvSatSolverMode::CRYPTOMINISAT
-           ? SatSolverFactory::createSatSolver<SatSolverFactory::CRYPTOMINISAT>
-           : SatSolverFactory::createSatSolver<SatSolverFactory::CADICAL>)(
-                                             d_env,
-                                             statisticsRegistry(),
-                                             d_env.getResourceManager(),
-                                             "theory::bv::BVSolverBitblast::"));
+    factory(options().bv.bvSatSolver)(d_env,
+                          statisticsRegistry(),
+                          d_env.getResourceManager(),
+                          "theory::bv::BVSolverBitblast::"));
   d_cnfStream.reset(new prop::CnfStream(d_env,
                                         d_satSolver.get(),
                                         d_bbRegistrar.get(),

@@ -86,11 +86,12 @@ class KissatSolver : public SatSolver
   void initialize() override;
 
   kissat* d_solver;
-
-  unsigned d_nextVarIdx;
   bool d_okay;
+
   SatVariable d_true;
   SatVariable d_false;
+  unsigned d_nextVarIdx;
+  std::vector<SatClause> d_clauses;
 
   Statistics d_statistics;
 };

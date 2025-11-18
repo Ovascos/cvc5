@@ -64,7 +64,8 @@ KissatVar toKissatVar(SatVariable var) { return var; }
 
 KissatSolver::KissatSolver(StatisticsRegistry& registry,
                            const std::string& name)
-    : d_solver(kissat_init()),
+    : d_solver(nullptr),
+      d_okay(false),
       // Note: Kissat variables start with index 1 rather than 0 since negated
       //       literals are represented as the negation of the index.
       d_nextVarIdx(1),
@@ -76,21 +77,16 @@ void KissatSolver::initialize()
 {
   d_true = newVar(false, true);
   d_false = newVar(false, true);
-  kissat_add(d_solver, toKissatVar(d_true));
-  kissat_add(d_solver, 0);
-  kissat_add(d_solver, -toKissatVar(d_false));
-  kissat_add(d_solver, 0);
 }
 
-KissatSolver::~KissatSolver() { kissat_release(d_solver); }
+KissatSolver::~KissatSolver()
+{
+  if (d_solver) { kissat_release(d_solver); }
+}
 
 ClauseId KissatSolver::addClause(SatClause& clause, bool removable)
 {
-  for (const SatLiteral& lit : clause)
-  {
-    kissat_add(d_solver, toKissatLit(lit));
-  }
-  kissat_add(d_solver, 0);
+  d_clauses.push_back(clause);
   ++d_statistics.d_numClauses;
   return ClauseIdError;
 }
@@ -113,23 +109,48 @@ SatVariable KissatSolver::falseVar() { return d_false; }
 
 SatValue KissatSolver::solve()
 {
-  TimerStat::CodeTimer codeTimer(d_statistics.d_solveTime);
-  SatValue res = toSatValue(kissat_solve(d_solver));
-  d_okay = (res == SAT_VALUE_TRUE);
-  ++d_statistics.d_numSatCalls;
-  return res;
+  return solve({});
 }
 
 SatValue KissatSolver::solve(long unsigned int&)
 {
   Unimplemented() << "Setting limits for Kissat not supported yet";
   return SAT_VALUE_UNKNOWN;
-};
+}
 
 SatValue KissatSolver::solve(const std::vector<SatLiteral>& assumptions)
 {
-  Unimplemented() << "Incremental solving with Kissat not supported yet";
-  return SAT_VALUE_UNKNOWN;
+  if (d_solver) { kissat_release(d_solver); }
+  d_solver = kissat_init();
+  d_okay = false;
+
+  kissat_set_option(d_solver, "quiet", 1);
+  kissat_reserve(d_solver, d_nextVarIdx);
+  kissat_add(d_solver, toKissatVar(d_true));
+  kissat_add(d_solver, 0);
+  kissat_add(d_solver, -toKissatVar(d_false));
+  kissat_add(d_solver, 0);
+
+  for (const SatClause& c : d_clauses)
+  {
+    for (const SatLiteral l : c)
+    {
+      kissat_add(d_solver, toKissatLit(l));
+    }
+    kissat_add(d_solver, 0);
+  }
+
+  for (const SatLiteral& l : assumptions)
+  {
+    kissat_add(d_solver, toKissatLit(l));
+    kissat_add(d_solver, 0);
+  }
+
+  TimerStat::CodeTimer codeTimer(d_statistics.d_solveTime);
+  SatValue res = toSatValue(kissat_solve(d_solver));
+  d_okay = (res == SAT_VALUE_TRUE);
+  ++d_statistics.d_numSatCalls;
+  return res;
 }
 
 void KissatSolver::getUnsatAssumptions(
@@ -143,12 +164,12 @@ void KissatSolver::interrupt() { kissat_terminate(d_solver); }
 SatValue KissatSolver::value(SatLiteral l)
 {
   Assert(d_okay);
+  Assert(d_solver);
   return toSatValueLit(kissat_value(d_solver, toKissatLit(l)));
 }
 
 SatValue KissatSolver::modelValue(SatLiteral l)
 {
-  Assert(d_okay);
   return value(l);
 }
 
