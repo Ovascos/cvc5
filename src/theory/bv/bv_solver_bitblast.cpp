@@ -220,27 +220,36 @@ void BVSolverBitblast::postCheck(Theory::Effort level)
 
   if (val == prop::SatValue::SAT_VALUE_FALSE)
   {
-    std::vector<prop::SatLiteral> unsat_assumptions;
-    d_satSolver->getUnsatAssumptions(unsat_assumptions);
-
-    Node conflict;
-    // Unsat assumptions produce conflict.
-    if (unsat_assumptions.size() > 0)
+    std::vector<Node> conf;
+    if (d_satSolver->hasUnsatAssumptions())
     {
-      std::vector<Node> conf;
-      for (const prop::SatLiteral& lit : unsat_assumptions)
+      // Unsat assumptions produce conflict.
+      std::vector<prop::SatLiteral> unsat_assumptions;
+      d_satSolver->getUnsatAssumptions(unsat_assumptions);
+      if (!unsat_assumptions.empty())
+      {
+        for (const prop::SatLiteral& lit : unsat_assumptions)
+        {
+          conf.push_back(d_literalFactCache[lit]);
+          Trace("bv-bitblast")
+              << "unsat assumption (" << lit << "): " << conf.back() << std::endl;
+        }
+      }
+      else  // Input assertions produce conflict.
+      {
+        conf.insert(conf.end(), d_assertions.begin(), d_assertions.end());
+      }
+    }
+    else
+    {
+      conf.insert(conf.end(), d_assertions.begin(), d_assertions.end());
+      for (const prop::SatLiteral& lit : assumptions)
       {
         conf.push_back(d_literalFactCache[lit]);
-        Trace("bv-bitblast")
-            << "unsat assumption (" << lit << "): " << conf.back() << std::endl;
       }
-      conflict = nm->mkAnd(conf);
     }
-    else  // Input assertions produce conflict.
-    {
-      std::vector<Node> assertions(d_assertions.begin(), d_assertions.end());
-      conflict = nm->mkAnd(assertions);
-    }
+    Node conflict = nm->mkAnd(conf);
+
     TrustNode tconflict;
     if (d_epg != nullptr)
     {
@@ -349,9 +358,9 @@ void BVSolverBitblast::initSatSolver()
   using prop::SatSolverFactory;
   using options::BvSatSolverMode;
 
-  auto factory = [](const BvSatSolverMode mode)
+  auto factory = [](const Options& options)
   {
-    switch (mode)
+    switch (options.bv.bvSatSolver)
     {
       default:
         Unreachable();
@@ -364,7 +373,7 @@ void BVSolverBitblast::initSatSolver()
     }
   };
   d_satSolver.reset(
-    factory(options().bv.bvSatSolver)(d_env,
+    factory(options())(d_env,
                           statisticsRegistry(),
                           d_env.getResourceManager(),
                           "theory::bv::BVSolverBitblast::"));

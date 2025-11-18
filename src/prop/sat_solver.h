@@ -120,7 +120,9 @@ class SatSolver
    * Can only be called if satisfiability check under assumptions was used and
    * if it returned SAT_VALUE_FALSE.
    */
-  virtual void getUnsatAssumptions(std::vector<SatLiteral>& unsat_assumptions) = 0;
+  virtual void getUnsatAssumptions(std::vector<SatLiteral>& unsat_assumptions) {}
+
+  virtual bool hasUnsatAssumptions() const { return false; }
 
  private:
   /** Is called by the SatSolverFactory right after construction. */

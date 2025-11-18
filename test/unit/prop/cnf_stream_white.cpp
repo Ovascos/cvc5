@@ -95,10 +95,6 @@ class FakeSatSolver : public SatSolver
     return SAT_VALUE_UNKNOWN;
   }
 
-  void getUnsatAssumptions(std::vector<SatLiteral>& unsat_assumptions) override
-  {
-  }
-
   SatValue value(SatLiteral l) override { return SAT_VALUE_UNKNOWN; }
 
   SatValue modelValue(SatLiteral l) override { return SAT_VALUE_UNKNOWN; }

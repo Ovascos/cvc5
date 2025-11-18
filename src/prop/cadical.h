@@ -59,6 +59,8 @@ class CadicalSolver : public CDCLTSatSolver, protected EnvObj
   SatValue solve(long unsigned int&) override;
   SatValue solve(const std::vector<SatLiteral>& assumptions) override;
   bool setPropagateOnly() override;
+
+  bool hasUnsatAssumptions() const override { return true; }
   void getUnsatAssumptions(std::vector<SatLiteral>& assumptions) override;
 
   void interrupt() override;
