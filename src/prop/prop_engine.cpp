@@ -381,6 +381,21 @@ void PropEngine::preferPhase(TNode n, bool phase)
   d_satSolver->preferPhase(phase ? lit : ~lit);
 }
 
+void PropEngine::setPreferredDecisions(const std::vector<Node>& ns,
+                                       const std::vector<bool>& phases)
+{
+  Assert(ns.size() == phases.size());
+  std::vector<SatLiteral> lits;
+  lits.reserve(ns.size());
+  for (size_t i = 0, nns = ns.size(); i < nns; i++)
+  {
+    Assert(ns[i].getType().isBoolean());
+    SatLiteral lit = d_cnfStream->getLiteral(ns[i]);
+    lits.push_back(phases[i] ? lit : ~lit);
+  }
+  d_satSolver->setPreferredDecisions(lits);
+}
+
 bool PropEngine::isDecision(Node lit) const
 {
   Assert(isSatLiteral(lit));

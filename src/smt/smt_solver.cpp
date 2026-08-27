@@ -43,6 +43,7 @@ SmtSolver::SmtSolver(Env& env, SolverEngineStatistics& stats)
     : EnvObj(env),
       d_pp(env, stats),
       d_asserts(env),
+      d_preferTerms(userContext()),
       d_stats(stats),
       d_theoryEngine(nullptr),
       d_propEngine(nullptr),
@@ -130,6 +131,8 @@ void SmtSolver::interrupt()
 
 Result SmtSolver::checkSatInternal()
 {
+  // resolve the preferred terms and hand them to the SAT solver.
+  applyPreferHints();
   // call the prop engine to check sat
   return d_propEngine->checkSat();
 }
@@ -194,6 +197,69 @@ void SmtSolver::assertToInternal(preprocessing::AssertionPipeline& ap)
       d_ppSkolemMap[newIndex] = k.second;
     }
   }
+}
+
+void SmtSolver::addPreferTerm(const Node& t)
+{
+  Trace("prefer") << "SmtSolver: addPreferTerm " << t << std::endl;
+  d_preferTerms.push_back(t);
+}
+
+void SmtSolver::applyPreferHints()
+{
+  if (d_preferTerms.empty())
+  {
+    return;
+  }
+  std::vector<Node> lits;
+  std::vector<bool> pols;
+  size_t nunresolved = 0;
+  for (const Node& t : d_preferTerms)
+  {
+    // strip the polarity, so that what we resolve is the variable itself
+    bool pol = true;
+    Node v = t;
+    while (v.getKind() == Kind::NOT)
+    {
+      pol = !pol;
+      v = v[0];
+    }
+    // replay the preprocessing the variable underwent. Note that only the
+    // top-level substitutions are replayed, which is what eliminates Boolean
+    // variables in practice; a variable transformed in some other way is
+    // dropped below.
+    Node n = rewrite(d_pp.applySubstitutions(v));
+    if (n.isConst())
+    {
+      // Preprocessing determined the variable, so no decision is ever made on
+      // it and the hint is vacuous rather than lost. Not worth warning about.
+      Trace("prefer") << "fixed: " << t << " -> " << n << std::endl;
+      continue;
+    }
+    // Note we must not use ensureLiteral here: a preferred term is a hint and
+    // may not introduce skolems or add clauses.
+    if (!d_propEngine->isSatLiteral(n))
+    {
+      Trace("prefer") << "unresolved: " << t << " -> " << n << std::endl;
+      ++nunresolved;
+      continue;
+    }
+    Trace("prefer") << "resolved: " << t << " -> " << (pol ? "" : "not ") << n
+                    << std::endl;
+    lits.push_back(n);
+    pols.push_back(pol);
+  }
+  d_stats.d_numPreferResolved = lits.size();
+  d_stats.d_numPreferUnresolved = nunresolved;
+  if (nunresolved > 0)
+  {
+    Trace("prefer")<< "warning: " << nunresolved << " of "
+                   << d_preferTerms.size()
+                   << " preferred terms were eliminated by preprocessing and "
+                      "will be ignored"
+                   << std::endl;
+  }
+  d_propEngine->setPreferredDecisions(lits, pols);
 }
 
 const context::CDList<Node>& SmtSolver::getPreprocessedAssertions() const

@@ -8346,6 +8346,16 @@ Term Solver::declarePool(const std::string& symbol,
   CVC5_API_TRY_CATCH_END;
 }
 
+void Solver::preferTerm(const Term& t) const
+{
+  CVC5_API_TRY_CATCH_BEGIN;
+  CVC5_API_SOLVER_CHECK_TERM_WITH_SORT(t, d_tm.getBooleanSort());
+  //////// all checks before this line
+  d_slv->preferTerm(*t.d_node);
+  ////////
+  CVC5_API_TRY_CATCH_END;
+}
+
 Term Solver::declareOracleFun(
     const std::string& symbol,
     const std::vector<Sort>& sorts,

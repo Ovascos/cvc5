@@ -203,6 +203,13 @@ class CadicalPropagator : public CaDiCaL::ExternalPropagator,
   void phase(SatLiteral lit);
 
   /**
+   * Configure the ordered list of preferred decision literals. See
+   * SatSolver::setPreferredDecisions.
+   * @param lits The literals, in the order they should be decided.
+   */
+  void set_preferred_decisions(const std::vector<SatLiteral>& lits);
+
+  /**
    * Return the activation literal for the current user level.
    *
    * Note: Returns undefSatLiteral at user level 0.
@@ -279,6 +286,12 @@ class CadicalPropagator : public CaDiCaL::ExternalPropagator,
   };
   /** Maps SatVariable to corresponding info struct. */
   std::vector<VarInfo> d_var_info;
+
+  /**
+   * Preferred decision literals, in the order they should be decided. Scanned
+   * front to back in cb_decide().
+   */
+  std::vector<SatLiteral> d_preferred;
 
   /**
    * Currently active variables, can get inactive on user pops.
@@ -376,6 +389,8 @@ class CadicalPropagator : public CaDiCaL::ExternalPropagator,
           cbCheckFoundModel(
               stats.registerInt("cadical::propagator::cb_check_found_model")),
           cbDecide(stats.registerInt("cadical::propagator::cb_decide")),
+          cbDecidePreferred(
+              stats.registerInt("cadical::propagator::cb_decide_preferred")),
           cbPropagate(stats.registerInt("cadical::propagator::cb_propagate")),
           cbAddReasonClauseLit(stats.registerInt(
               "cadical::propagator::cb_add_reason_clause_lit")),
@@ -393,6 +408,7 @@ class CadicalPropagator : public CaDiCaL::ExternalPropagator,
     IntStat notifyBacktrack;
     IntStat cbCheckFoundModel;
     IntStat cbDecide;
+    IntStat cbDecidePreferred;
     IntStat cbPropagate;
     IntStat cbAddReasonClauseLit;
     IntStat cbHasExternalClause;

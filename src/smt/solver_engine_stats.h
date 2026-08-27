@@ -46,6 +46,10 @@ struct SolverEngineStatistics
 
   /** Has something simplified to false? */
   IntStat d_simplifiedToFalse;
+  /** Number of preferred terms that were resolved to a SAT literal */
+  IntStat d_numPreferResolved;
+  /** Number of preferred terms that did not survive preprocessing */
+  IntStat d_numPreferUnresolved;
 }; /* struct SolverEngineStatistics */
 
 }  // namespace smt

@@ -27,7 +27,9 @@ SolverEngineStatistics::SolverEngineStatistics(StatisticsRegistry& sr,
       d_solveTime(sr.registerTimer(name + "solveTime")),
       d_pushPopTime(sr.registerTimer(name + "pushPopTime")),
       d_processAssertionsTime(sr.registerTimer(name + "processAssertionsTime")),
-      d_simplifiedToFalse(sr.registerInt(name + "simplifiedToFalse"))
+      d_simplifiedToFalse(sr.registerInt(name + "simplifiedToFalse")),
+      d_numPreferResolved(sr.registerInt(name + "numPreferResolved")),
+      d_numPreferUnresolved(sr.registerInt(name + "numPreferUnresolved"))
 {
 }
 

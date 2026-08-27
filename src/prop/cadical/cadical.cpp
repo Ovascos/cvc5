@@ -356,6 +356,12 @@ void CadicalSolver::preferPhase(SatLiteral lit)
   d_propagator->phase(lit);
 }
 
+void CadicalSolver::setPreferredDecisions(const std::vector<SatLiteral>& lits)
+{
+  AlwaysAssert(d_propagator);
+  d_propagator->set_preferred_decisions(lits);
+}
+
 bool CadicalSolver::isDecision(SatVariable var) const
 {
   return d_solver->is_decision(toCadicalVar(var));

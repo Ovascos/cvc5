@@ -1143,6 +1143,13 @@ void SolverEngine::declarePool(const Node& p,
   qe->declarePool(p, initValue);
 }
 
+void SolverEngine::preferTerm(const Node& t)
+{
+  Assert(t.getType().isBoolean());
+  beginCall();
+  d_smtSolver->addPreferTerm(t);
+}
+
 void SolverEngine::declareOracleFun(
     Node var, std::function<std::vector<Node>(const std::vector<Node>&)> fn)
 {

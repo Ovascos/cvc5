@@ -80,6 +80,12 @@ class SmtSolver : protected EnvObj
    */
   void interrupt();
   /**
+   * Add a term the solver should prefer when making decisions, as given by the
+   * (prefer <term>) command. The term is stored as parsed, i.e. possibly
+   * negated; its polarity is stripped when the hints are resolved.
+   */
+  void addPreferTerm(const Node& t);
+  /**
    * Get the list of preprocessed assertions. Only valid if
    * trackPreprocessedAssertions is true.
    */
@@ -129,6 +135,11 @@ class SmtSolver : protected EnvObj
   Result checkSatInternal();
 
  private:
+  /**
+   * Resolve the preferred terms to SAT literals and hand them to the SAT
+   * solver, in the order in which they were parsed. Called once per check.
+   */
+  void applyPreferHints();
   /** Whether we track information necessary for deep restarts */
   bool trackPreprocessedAssertions() const;
   /** Finish initialization of preprocessor */
@@ -137,6 +148,8 @@ class SmtSolver : protected EnvObj
   Preprocessor d_pp;
   /** Assertions manager */
   Assertions d_asserts;
+  /** Preferred terms, in the order they were parsed (for (prefer t)) */
+  NodeList d_preferTerms;
   /** Reference to the statistics of SolverEngine */
   SolverEngineStatistics& d_stats;
   /** The theory engine */

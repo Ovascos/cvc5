@@ -82,6 +82,8 @@ class CadicalSolver : public CDCLTSatSolver, protected EnvObj
 
   void preferPhase(SatLiteral lit) override;
 
+  void setPreferredDecisions(const std::vector<SatLiteral>& lits) override;
+
   bool isDecision(SatVariable var) const override;
 
   bool isFixed(SatVariable var) const override;

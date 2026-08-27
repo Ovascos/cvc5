@@ -145,6 +145,19 @@ class CDCLTSatSolver : public SatSolver
    */
   virtual void preferPhase(SatLiteral lit) = 0;
 
+  /**
+   * Configure an ordered list of preferred decision literals.
+   *
+   * Whenever the SAT solver makes a decision on its own, it decides the first
+   * of these literals whose variable is currently unassigned, in the given
+   * polarity. Only if all of them are assigned does its own decision heuristic
+   * run. Note that this overrides the preferred phase configured via
+   * preferPhase() for these variables.
+   *
+   * @param lits The literals, in the order they should be decided.
+   */
+  virtual void setPreferredDecisions(const std::vector<SatLiteral>&) {}
+
   virtual bool isDecision(SatVariable decn) const = 0;
 
   /**

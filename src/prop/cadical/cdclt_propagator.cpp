@@ -316,6 +316,28 @@ int CadicalPropagator::cb_decide()
     return 0;
   }
   ++d_stats.cbDecide;
+  // Preferred decisions take priority
+  for (const SatLiteral& plit : d_preferred)
+  {
+    const SatVariable var = plit.getSatVariable();
+    // The list is configured before search, so it may name variables that no
+    // longer exist or are no longer observed.
+    if (var >= d_var_info.size())
+    {
+      continue;
+    }
+    const auto& pinfo = d_var_info[var];
+    // Note we must check is_active rather than only the assignment: variables
+    // deactivated by a user pop are no longer observed by CaDiCaL, and their
+    // assignment is left stale.
+    if (pinfo.is_active && pinfo.assignment == 0)
+    {
+      Trace("cadical::propagator") << "cb::decide: " << plit << " (preferred)"
+                                   << std::endl;
+      ++d_stats.cbDecidePreferred;
+      return toCadicalLit(plit);
+    }
+  }
   bool stopSearch = false;
   bool requirePhase = false;
   SatLiteral lit = d_proxy->getNextDecisionRequest(requirePhase, stopSearch);
@@ -692,6 +714,12 @@ void CadicalPropagator::phase(SatLiteral lit)
 {
   d_solver.phase(toCadicalLit(lit));
   d_var_info[lit.getSatVariable()].phase = lit.isNegated() ? -1 : 1;
+}
+
+void CadicalPropagator::set_preferred_decisions(
+    const std::vector<SatLiteral>& lits)
+{
+  d_preferred = lits;
 }
 
 const SatLiteral& CadicalPropagator::current_activation_lit() const

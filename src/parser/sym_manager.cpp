@@ -41,7 +41,6 @@ class SymManager::Implementation
         d_declareSorts(&d_context),
         d_declareTerms(&d_context),
         d_funToSynth(&d_context),
-        d_preferTerms(&d_context),
         d_hasPushedScope(&d_context, false),
         d_lastSynthName(&d_context)
   {
@@ -79,10 +78,6 @@ class SymManager::Implementation
   void addModelDeclarationTerm(cvc5::Term t);
   /** Add function to the list of functions to synthesize. */
   void addFunctionToSynthesize(cvc5::Term t);
-  /** Add term to the list of preferred terms. */
-  void addPreferTerm(cvc5::Term t);
-  /** get preferred terms */
-  std::vector<cvc5::Term> getPreferTerms() const;
   /** reset */
   void reset();
   /** reset assertions */
@@ -115,8 +110,6 @@ class SymManager::Implementation
   TermList d_declareTerms;
   /** Functions to synthesize (for response to check-synth) */
   TermList d_funToSynth;
-  /** Preferred terms, in the order they were parsed (for (prefer t)) */
-  TermList d_preferTerms;
   /**
    * Have we pushed a scope (e.g. a let or quantifier) in the current context?
    */
@@ -243,17 +236,6 @@ void SymManager::Implementation::addFunctionToSynthesize(cvc5::Term f)
   Trace("sym-manager") << "SymManager: addFunctionToSynthesize " << f
                        << std::endl;
   d_funToSynth.push_back(f);
-}
-
-void SymManager::Implementation::addPreferTerm(cvc5::Term t)
-{
-  Trace("sym-manager") << "SymManager: addPreferTerm " << t << std::endl;
-  d_preferTerms.push_back(t);
-}
-
-std::vector<cvc5::Term> SymManager::Implementation::getPreferTerms() const
-{
-  return std::vector<cvc5::Term>(d_preferTerms.begin(), d_preferTerms.end());
 }
 
 void SymManager::Implementation::pushScope(bool isUserContext)
@@ -508,16 +490,6 @@ void SymManager::addModelDeclarationTerm(cvc5::Term t)
 void SymManager::addFunctionToSynthesize(cvc5::Term f)
 {
   d_implementation->addFunctionToSynthesize(f);
-}
-
-void SymManager::addPreferTerm(cvc5::Term t)
-{
-  d_implementation->addPreferTerm(t);
-}
-
-std::vector<cvc5::Term> SymManager::getPreferTerms() const
-{
-  return d_implementation->getPreferTerms();
 }
 
 size_t SymManager::scopeLevel() const

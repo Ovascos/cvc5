@@ -164,6 +164,21 @@ class PropEngine : protected EnvObj
   void preferPhase(TNode n, bool phase);
 
   /**
+   * Configure the ordered list of preferred decision literals, as given by the
+   * (prefer <term>) command. Whenever the SAT solver makes a decision, it
+   * decides the first of these literals whose variable is unassigned; only if
+   * all are assigned does its own heuristic run.
+   *
+   * Each node in ns must have an associated SAT literal, and is decided with
+   * the polarity given by the corresponding entry of phases.
+   *
+   * @param ns The nodes, in the order they should be decided.
+   * @param phases The phase to decide each node in.
+   */
+  void setPreferredDecisions(const std::vector<Node>& ns,
+                             const std::vector<bool>& phases);
+
+  /**
    * Return whether the given literal is a SAT decision.  Either phase
    * is permitted; that is, if "lit" is a SAT decision, this function
    * returns true for both lit and the negation of lit.

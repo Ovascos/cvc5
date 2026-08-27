@@ -336,7 +336,7 @@ PreferCommand::PreferCommand(const cvc5::Term& t) : d_term(t) {}
 
 cvc5::Term PreferCommand::getTerm() const { return d_term; }
 
-void PreferCommand::invoke(cvc5::Solver* solver, SymManager* sm)
+void PreferCommand::invoke(cvc5::Solver* solver, CVC5_UNUSED SymManager* sm)
 {
   try
   {
@@ -351,17 +351,17 @@ void PreferCommand::invoke(cvc5::Solver* solver, SymManager* sm)
     }
     // A preferred term is only meaningful if it occurs in the problem, so we
     // require it to be a subterm of at least one asserted formula.
-    if (!hasSubterm(solver->getAssertions(), d_term))
+    if (!hasSubterm(solver->getAssertions(), atom))
     {
       std::stringstream ss;
-      ss << "preferred term " << d_term
+      ss << "preferred variable " << atom
          << " does not occur in any assertion, ignoring";
       // Not fatal: we report the error and drop this prefer statement, but
       // continue processing the input.
       d_commandStatus = new CommandRecoverableFailure(ss.str());
       return;
     }
-    sm->addPreferTerm(d_term);
+    solver->preferTerm(d_term);
     d_commandStatus = CommandSuccess::instance();
   }
   catch (exception& e)

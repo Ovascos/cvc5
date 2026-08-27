@@ -6371,6 +6371,30 @@ class CVC5_EXPORT Solver
    * @param initValue The initial value of the pool.
    * @return The pool symbol.
    */
+  /**
+   * Record a term the solver should prefer when making decisions.
+   *
+   * SMT-LIB:
+   *
+   * \verbatim embed:rst:leading-asterisk
+   * .. code:: smtlib
+   *
+   *     (prefer <term>)
+   * \endverbatim
+   *
+   * Whenever the SAT solver makes a decision, it decides the first preferred
+   * term whose variable is still unassigned, in the phase given here. Only if
+   * all of them are assigned does its own decision heuristic run.
+   *
+   * @warning This function is experimental and may change in future versions.
+   *
+   * @note This function is not exposed by the C, Java and Python bindings yet.
+   *
+   * @param t The preferred term, which must be a Boolean variable, possibly
+   *          negated.
+   */
+  void preferTerm(const Term& t) const;
+
   Term declarePool(const std::string& symbol,
                    const Sort& sort,
                    const std::vector<Term>& initValue) const;

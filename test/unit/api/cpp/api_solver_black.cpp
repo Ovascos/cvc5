@@ -1590,6 +1590,19 @@ TEST_F(TestApiBlackSolver, getQuantifierEliminationDisjunct)
   ASSERT_THROW(slv.getQuantifierEliminationDisjunct(forall), CVC5ApiException);
 }
 
+TEST_F(TestApiBlackSolver, preferTerm)
+{
+  d_solver->setLogic("QF_UF");
+  Term p = d_tm.mkConst(d_bool, "p");
+  Term q = d_tm.mkConst(d_bool, "q");
+  d_solver->assertFormula(d_tm.mkTerm(Kind::OR, {p, q}));
+  ASSERT_NO_THROW(d_solver->preferTerm(p));
+  ASSERT_NO_THROW(d_solver->preferTerm(d_tm.mkTerm(Kind::NOT, {q})));
+  // must be Boolean
+  ASSERT_THROW(d_solver->preferTerm(d_tm.mkInteger(1)), CVC5ApiException);
+  ASSERT_THROW(d_solver->preferTerm(Term()), CVC5ApiException);
+}
+
 TEST_F(TestApiBlackSolver, declareSepHeap)
 {
   d_solver->setLogic("ALL");

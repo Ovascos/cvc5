@@ -470,6 +470,16 @@ class CVC5_EXPORT SolverEngine
   void declarePool(const Node& p, const std::vector<Node>& initValue);
 
   /**
+   * Record a term the solver should prefer when making decisions, as given by
+   * the (prefer <term>) command. The term should be a Boolean variable,
+   * possibly negated. This is a hint only: it does not constrain the problem,
+   * and is dropped if the variable does not survive preprocessing.
+   *
+   * @param t The preferred term.
+   */
+  void preferTerm(const Node& t);
+
+  /**
    * Add an oracle function to the state, also adds an oracle interface
    * defining it.
    *

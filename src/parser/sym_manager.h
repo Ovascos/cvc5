@@ -185,10 +185,6 @@ class CVC5_EXPORT SymManager
    */
   std::vector<cvc5::Term> getFunctionsToSynthesize() const;
   /**
-   * @return The preferred terms, in the order in which they were parsed.
-   */
-  std::vector<cvc5::Term> getPreferTerms() const;
-  /**
    * Add declared sort to the list of model declarations.
    */
   void addModelDeclarationSort(cvc5::Sort s);
@@ -201,11 +197,6 @@ class CVC5_EXPORT SymManager
    * in a successful response to check-synth.
    */
   void addFunctionToSynthesize(cvc5::Term f);
-  /**
-   * Add t to the list of preferred terms, as given by a (prefer t) command.
-   * The list is maintained in the order in which the terms were parsed.
-   */
-  void addPreferTerm(cvc5::Term t);
 
   //---------------------------- end named expressions
   /**
