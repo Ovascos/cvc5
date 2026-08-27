@@ -12,3 +12,4 @@
 
 # Add unit tests.
 cvc5_add_unit_test_black(parser_black parser)
+cvc5_add_unit_test_black(prefer_black parser)

@@ -16,6 +16,7 @@
 #include <iostream>
 #include <iterator>
 #include <sstream>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -292,6 +293,88 @@ std::string AssertCommand::getCommandName() const { return "assert"; }
 void AssertCommand::toStream(std::ostream& out) const
 {
   internal::Printer::getPrinter(out)->toStreamCmdAssert(out,
+                                                        termToNode(d_term));
+}
+
+/* -------------------------------------------------------------------------- */
+/* class PreferCommand                                                        */
+/* -------------------------------------------------------------------------- */
+
+namespace {
+/**
+ * Return true if t occurs as a subterm of one of the terms in ts, where a term
+ * is considered a subterm of itself. The traversal treats the terms as DAGs,
+ * and shares the visited cache across all of ts.
+ */
+bool hasSubterm(const std::vector<cvc5::Term>& ts, const cvc5::Term& t)
+{
+  std::unordered_set<cvc5::Term> visited;
+  std::vector<cvc5::Term> toProcess;
+  for (const cvc5::Term& tc : ts)
+  {
+    toProcess.push_back(tc);
+    while (!toProcess.empty())
+    {
+      cvc5::Term cur = toProcess.back();
+      toProcess.pop_back();
+      if (cur == t)
+      {
+        return true;
+      }
+      if (!visited.insert(cur).second)
+      {
+        continue;
+      }
+      toProcess.insert(toProcess.end(), cur.begin(), cur.end());
+    }
+  }
+  return false;
+}
+}  // namespace
+
+PreferCommand::PreferCommand(const cvc5::Term& t) : d_term(t) {}
+
+cvc5::Term PreferCommand::getTerm() const { return d_term; }
+
+void PreferCommand::invoke(cvc5::Solver* solver, SymManager* sm)
+{
+  try
+  {
+    cvc5::Term atom = d_term.getKind() == cvc5::Kind::NOT ? d_term[0] : d_term;
+    if (atom.getKind() != cvc5::Kind::CONSTANT || !atom.getSort().isBoolean())
+    {
+      std::stringstream ss;
+      ss << "preferred term " << d_term
+         << " is not a Boolean variable, ignoring";
+      d_commandStatus = new CommandRecoverableFailure(ss.str());
+      return;
+    }
+    // A preferred term is only meaningful if it occurs in the problem, so we
+    // require it to be a subterm of at least one asserted formula.
+    if (!hasSubterm(solver->getAssertions(), d_term))
+    {
+      std::stringstream ss;
+      ss << "preferred term " << d_term
+         << " does not occur in any assertion, ignoring";
+      // Not fatal: we report the error and drop this prefer statement, but
+      // continue processing the input.
+      d_commandStatus = new CommandRecoverableFailure(ss.str());
+      return;
+    }
+    sm->addPreferTerm(d_term);
+    d_commandStatus = CommandSuccess::instance();
+  }
+  catch (exception& e)
+  {
+    d_commandStatus = new CommandFailure(e.what());
+  }
+}
+
+std::string PreferCommand::getCommandName() const { return "prefer"; }
+
+void PreferCommand::toStream(std::ostream& out) const
+{
+  internal::Printer::getPrinter(out)->toStreamCmdPrefer(out,
                                                         termToNode(d_term));
 }
 

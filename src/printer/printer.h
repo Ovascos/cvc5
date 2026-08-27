@@ -116,6 +116,9 @@ class CVC5_EXPORT Printer
   /** Print assert command */
   virtual void toStreamCmdAssert(std::ostream& out, Node n) const;
 
+  /** Print prefer command */
+  virtual void toStreamCmdPrefer(std::ostream& out, Node n) const;
+
   /** Print push command */
   virtual void toStreamCmdPush(std::ostream& out, uint32_t nscopes) const;
 

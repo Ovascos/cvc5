@@ -212,6 +212,11 @@ void Printer::toStreamCmdAssert(std::ostream& out, CVC5_UNUSED Node n) const
   printUnknownCommand(out, "assert");
 }
 
+void Printer::toStreamCmdPrefer(std::ostream& out, CVC5_UNUSED Node n) const
+{
+  printUnknownCommand(out, "prefer");
+}
+
 void Printer::toStreamCmdPush(std::ostream& out,
                               CVC5_UNUSED uint32_t nscopes) const
 {

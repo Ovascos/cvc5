@@ -210,6 +210,22 @@ class CVC5_EXPORT AssertCommand : public Cmd
   void toStream(std::ostream& out) const override;
 }; /* class AssertCommand */
 
+class CVC5_EXPORT PreferCommand : public Cmd
+{
+ protected:
+  cvc5::Term d_term;
+
+ public:
+  PreferCommand(const cvc5::Term& t);
+
+  cvc5::Term getTerm() const;
+
+  void invoke(cvc5::Solver* solver, parser::SymManager* sm) override;
+
+  std::string getCommandName() const override;
+  void toStream(std::ostream& out) const override;
+}; /* class PreferCommand */
+
 class CVC5_EXPORT PushCommand : public Cmd
 {
  public:

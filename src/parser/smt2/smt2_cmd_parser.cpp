@@ -81,6 +81,7 @@ Smt2CmdParser::Smt2CmdParser(Smt2Lexer& lex,
     d_table["get-qe-disjunct"] = Token::GET_QE_DISJUNCT_TOK;
     d_table["get-qe"] = Token::GET_QE_TOK;
     d_table["include"] = Token::INCLUDE_TOK;
+    d_table["prefer"] = Token::PREFER_TOK;
     d_table["simplify"] = Token::SIMPLIFY_TOK;
   }
   if (d_lex.isSygus())
@@ -140,6 +141,14 @@ std::unique_ptr<Cmd> Smt2CmdParser::parseNextCommand()
             namedTerm.first, namedTerm.second, true);
         Trace("parser") << "finished process top-level name" << std::endl;
       }
+    }
+    break;
+    // (prefer <term>)
+    case Token::PREFER_TOK:
+    {
+      d_state.checkThatLogicIsSet();
+      Term t = d_tparser.parseTerm();
+      cmd.reset(new PreferCommand(t));
     }
     break;
     // sygus assume/constraint

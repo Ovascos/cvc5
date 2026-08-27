@@ -1705,6 +1705,11 @@ void Smt2Printer::toStreamCmdAssert(std::ostream& out, Node n) const
   out << "(assert " << n << ')';
 }
 
+void Smt2Printer::toStreamCmdPrefer(std::ostream& out, Node n) const
+{
+  out << "(prefer " << n << ')';
+}
+
 void Smt2Printer::toStreamCmdPush(std::ostream& out, uint32_t nscopes) const
 {
   out << "(push " << nscopes << ")";

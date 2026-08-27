@@ -53,6 +53,8 @@ class AstPrinter : public cvc5::internal::Printer
   /** Print assert command */
   void toStreamCmdAssert(std::ostream& out, Node n) const override;
 
+  void toStreamCmdPrefer(std::ostream& out, Node n) const override;
+
   /** Print push command */
   void toStreamCmdPush(std::ostream& out, uint32_t nscopes) const override;
 

@@ -100,6 +100,7 @@ std::ostream& operator<<(std::ostream& o, Token t)
     case Token::NUMERAL: o << "NUMERAL"; break;
     case Token::PAR_TOK: o << "PAR_TOK"; break;
     case Token::POP_TOK: o << "POP_TOK"; break;
+    case Token::PREFER_TOK: o << "PREFER_TOK"; break;
     case Token::PUSH_TOK: o << "PUSH_TOK"; break;
     case Token::QUOTED_SYMBOL: o << "QUOTED_SYMBOL"; break;
     case Token::RATIONAL_LITERAL: o << "RATIONAL_LITERAL"; break;

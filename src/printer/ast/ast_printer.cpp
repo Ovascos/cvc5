@@ -209,6 +209,11 @@ void AstPrinter::toStreamCmdAssert(std::ostream& out, Node n) const
   out << "Assert(" << n << ')' << std::endl;
 }
 
+void AstPrinter::toStreamCmdPrefer(std::ostream& out, Node n) const
+{
+  out << "Prefer(" << n << ')' << std::endl;
+}
+
 void AstPrinter::toStreamCmdPush(std::ostream& out, uint32_t nscopes) const
 {
   out << "Push(" << nscopes << ")" << std::endl;

@@ -96,6 +96,7 @@ enum Token : uint32_t
   NUMERAL,
   PAR_TOK,
   POP_TOK,
+  PREFER_TOK,
   PUSH_TOK,
   QUOTED_SYMBOL,
   RATIONAL_LITERAL,
